@@ -1,65 +1,11 @@
-# Hono Examples
+# Hono example for Cloudflare Workers
 
-This repository contains examples that use [Hono](https://hono.dev).
+Before you can start publishing your service to cloudflare worker, you must sign up for a Cloudflare Workers account first, you can check out this [document](https://developers.cloudflare.com/workers/get-started/guide)
 
-## Included Examples
+You can update the information (`name`, `zoon_id`, etc) in wrangler file, then you can test and deploy your service by simply doing,
 
-- [basic](./basic/) - basic usage of routing, middleware, and `Context`
-- [blog](./blog/) - CRUD example
-- [durable-objects](./durable-objects/) - simple example with Cloudflare Durable Objects
-- [env-vars](./env-vars/) - example using environment variables with Hono in Typescript: `Bindings` & `Variables`
-- [jsx-ssr](./jsx-ssr/) - JSX Server Side Rendering with `JSX` Middleware
-- [serve-static](./serve-static/) - example of `Serve Static` Middleware
-- [deno](./deno/) - Deno example
-- [bun](./bun/) - Bun example
-- [pages-stack](./pages-stack/) - Zod + Zod Validator + `hc` + React on Cloudflare Pages
-
-## How to run
-
-### Cloudflare Workers
-
-Install:
-
-```
+```txt
 yarn install
+yarn dev 		# Start a local server for developing your worker
+yarn deploy # Publish your worker to the orange cloud
 ```
-
-Run:
-
-```
-yarn dev
-```
-
-### Deno
-
-```
-deno run --allow-net hello.ts
-```
-
-or allow to read files on local disk:
-
-```
-deno run --allow-net --allow-read jsx.tsx
-```
-
-### Bun
-
-Install:
-
-```
-bun install
-```
-
-Run:
-
-```
-bun run hello.ts
-```
-
-## Author
-
-Yusuke Wada https://github.com/yusukebe
-
-## License
-
-Distributed under the MIT License.
