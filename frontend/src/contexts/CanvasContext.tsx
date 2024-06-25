@@ -1,4 +1,12 @@
-import { ReactNode, createContext, useContext, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import { Tool } from "@/lib/types";
 
 interface MyComponentProps {
   children: ReactNode;
@@ -7,6 +15,8 @@ interface MyComponentProps {
 interface CanvasContextType {
   elements: any[];
   setElements: React.Dispatch<React.SetStateAction<any[]>>;
+  tool: any;
+  setTool: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const CanvasContext = createContext<CanvasContextType | null>(null);
@@ -23,9 +33,10 @@ export const useCanvasContext = () => {
 
 const CanvasContextProvider: React.FC<MyComponentProps> = ({ children }) => {
   const [elements, setElements] = useState<any[]>([]);
+  const [tool, setTool] = useState<any>(Tool.Default);
 
   return (
-    <CanvasContext.Provider value={{ elements, setElements }}>
+    <CanvasContext.Provider value={{ elements, setElements, tool, setTool }}>
       {children}
     </CanvasContext.Provider>
   );
