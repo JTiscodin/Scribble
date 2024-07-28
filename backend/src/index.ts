@@ -14,7 +14,7 @@ app.get(
         console.log(evt, ws);
       },
       onClose: async (evt, ws) => {
-        console.log(evt)
+        // console.log(evt)
       },
       onMessage: (event, ws) => {
         console.log(event.data);

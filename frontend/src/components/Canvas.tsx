@@ -59,7 +59,7 @@ export default function Canvas() {
               onSelect={() => {
                 selectShape(rect.id);
               }}
-              onChange={(newAttrs) => {
+              onChange={(newAttrs: any) => {
                 const rects = rectangles.slice();
                 rects[i] = newAttrs;
                 setRectangles(rects);
