@@ -4,7 +4,7 @@ export enum GameCommands{
 }
 
 export type Game = {
-    id: number,
+    id: number,    
     canvas: Canvas,
     players: Player[]
 

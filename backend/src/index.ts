@@ -3,7 +3,7 @@ import { upgradeWebSocket } from "hono/cloudflare-workers";
 
 const app = new Hono();
 
-app.get("/", (c) => c.text("Hello Cloudflare Workers!"));
+app.get("/", (c) => c.json({ msg: "Hello Cloudflare Workers!" }));
 
 app.get(
   "/ws",

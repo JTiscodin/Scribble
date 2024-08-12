@@ -3,20 +3,28 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
 import { Tool } from "@/lib/types";
+import Konva from "konva";
+import { Stage } from "konva/lib/Stage";
 
 interface MyComponentProps {
   children: ReactNode;
 }
+
 
 interface CanvasContextType {
   elements: any[];
   setElements: React.Dispatch<React.SetStateAction<any[]>>;
   tool: any;
   setTool: React.Dispatch<React.SetStateAction<any>>;
+  stageRef: React.MutableRefObject<Konva.Stage | null>;
+  isDrawing: React.MutableRefObject<boolean>;
+  lines: any[];
+  setLines: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const CanvasContext = createContext<CanvasContextType | null>(null);
@@ -34,9 +42,23 @@ export const useCanvasContext = () => {
 const CanvasContextProvider: React.FC<MyComponentProps> = ({ children }) => {
   const [elements, setElements] = useState<any[]>([]);
   const [tool, setTool] = useState<any>(Tool.Default);
+  const stageRef = useRef<Konva.Stage | null>(null);
+  const [lines, setLines] = useState<any[]>([]);
+  const isDrawing = useRef<boolean>(false);
 
   return (
-    <CanvasContext.Provider value={{ elements, setElements, tool, setTool }}>
+    <CanvasContext.Provider
+      value={{
+        elements,
+        setElements,
+        tool,
+        setTool,
+        isDrawing,
+        stageRef,
+        lines,
+        setLines,
+      }}
+    >
       {children}
     </CanvasContext.Provider>
   );
