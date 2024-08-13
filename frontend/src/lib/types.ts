@@ -4,3 +4,8 @@ export enum Tool {
     Circle = "Circle",
     Pen = "Pen",
   }
+
+  export type Player = {
+    username: string,
+    socket: WebSocket | null;
+  }
