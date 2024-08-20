@@ -1,45 +1,16 @@
-import { Hono } from "hono";
-import { upgradeWebSocket } from "hono/cloudflare-workers";
+import WebSocket from "ws";
 
-const app = new Hono();
+const wss = new WebSocket.Server({ port: 8080 });
 
-app.get("/", (c) => c.json({ msg: "Hello Cloudflare Workers!" }));
+wss.on("connection", (ws: WebSocket) => {
+  console.log("New cliend connected");
 
-app.get(
-  "/ws",
-  upgradeWebSocket(() => {
-    return {
-      onOpen: (evt, ws) => {
-        console.log("open");
-        console.log(evt, ws);
-      },
-      onClose: async (evt, ws) => {
-        // console.log(evt)
-      },
-      onMessage: (event, ws) => {
-        console.log(event.data);
-        ws.send("received msg: " + event.data);
-      },
-    };
-  })
-);
+  ws.on("message", (message: string) => {
+    console.log("recieved msg: " + message);
+    ws.send("Server recieved your message " + message);
+  });
 
-app.post("/start-game", async (c) => {
-  //parsing the body to json and then using it
-  const body = await c.req.json();
-  console.log(body);
-  return c.text("started game");
+  ws.on("close", () => {
+    console.log("client disconnected");
+  });
 });
-
-//Custom Error Message
-app.onError((err, c) => {
-  console.log(`${err}`);
-  return c.text("some error occurred");
-});
-
-//Custom not found msg
-app.notFound((c) => {
-  return c.text("Didn't find the page", 404);
-});
-
-export default app;
