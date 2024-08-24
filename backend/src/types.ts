@@ -28,8 +28,8 @@ interface JoinRoomMessage {
 }
 
 interface CheckAnswer {
-  type: SocketMessages.CHECK_ANSWER
-  answer: string
+  type: SocketMessages.CHECK_ANSWER;
+  answer: string;
 }
 
 export type MessageTypes =
@@ -37,7 +37,8 @@ export type MessageTypes =
   | StartGameMessage
   | EndGameMessage
   | JoinRoomMessage
-  | CanvasChangeMessage;
+  | CanvasChangeMessage
+  | CheckAnswer;
 
 export enum Tool {
   Default = "Default",
