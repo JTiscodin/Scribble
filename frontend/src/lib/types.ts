@@ -1,5 +1,3 @@
-// import WebSocket from "ws";
-
 interface CreateRoomMessage {
   type: SocketMessages.CREATE_ROOM;
   username: string;
@@ -32,12 +30,25 @@ interface CheckAnswer {
   answer: string;
 }
 
+interface CanvasUpdated {
+  type: SocketMessages.CANVAS_UPDATED;
+  canvas: string;
+}
+
+interface LeaveRoomMessage {
+  type: SocketMessages.LEAVE_ROOM;
+  roomId: string;
+  username: string;
+}
+
 export type MessageTypes =
   | CreateRoomMessage
   | StartGameMessage
   | EndGameMessage
   | JoinRoomMessage
-  | CanvasChangeMessage;
+  | CanvasChangeMessage
+  | LeaveRoomMessage
+  | CanvasUpdated;
 
 export enum Tool {
   Default = "Default",
@@ -81,6 +92,8 @@ export enum SocketMessages {
   JOIN_ROOM,
   CANVAS_CHANGE,
   CHECK_ANSWER,
+  LEAVE_ROOM,
+  CANVAS_UPDATED,
 }
 
 export type Canvas = {};

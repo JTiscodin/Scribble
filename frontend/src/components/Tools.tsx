@@ -1,69 +1,52 @@
-import { LuRectangleHorizontal } from "react-icons/lu";
-import { FaP, FaPencil, FaArrowPointer } from "react-icons/fa6";
-import { MdOutlineTextFields } from "react-icons/md";
 import { useCanvasContext } from "@/contexts/CanvasContext";
-import { Tool } from "@/lib/types";
-import { Rect } from "react-konva";
-
-type tool = {
-  logo: JSX.Element;
-  tool: Tool;
-};
+import { SocketMessages, Tool } from "@/lib/types";
+import { Button } from "./ui/button";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
 export default function ToolsList() {
-  const { tool, setTool, elements, setElements, isDrawing } = useCanvasContext();
+  const { stroke, setStroke, setLines, lines } = useCanvasContext();
 
-  const handleToolClick = (tool: Tool) => {
-    switch (tool) {
-      case Tool.Pen:
-        setTool(tool);
-        console.log(tool);
-        
-        break;
+  const { socket } = usePlayerContext();
 
-      case Tool.Rectangle:
-        setTool(tool);
-        console.log(tool);
-        setElements((prev) => [
-          ...prev,
-          <Rect draggable width={50} height={50} fill="red" />,
-        ]);
-      default:
-        setTool(Tool.Default);
-        console.log(tool);
+  const changePenColour = (stroke: string) => {
+    setStroke(stroke);
+  };
+
+  const handleCanvasReset = async () => {
+    if (socket) {
+      setLines([]);
+      const data = JSON.stringify({
+        type: SocketMessages.CANVAS_CHANGE,
+        canvas: [],
+      });
+      socket.send(data);
     }
   };
 
-  let tools: tool[] = [
-    {
-      logo: (
-        <LuRectangleHorizontal className="h-10 w-10 p-1  hover:bg-purple-400 duration-200 rounded-2xl" />
-      ),
-      tool: Tool.Rectangle,
-    },
-    {
-      logo: (
-        <FaArrowPointer className="h-7 w-7 p-1  hover:bg-purple-400 duration-200 rounded-2xl" />
-      ),
-      tool: Tool.Default,
-    },
-    {
-      logo: (
-        <FaPencil className="h-8 w-8 p-1  hover:bg-purple-400 duration-200 rounded-2xl" />
-      ),
-      tool: Tool.Pen,
-    },
+  const strokeColors = [
+    "#FF5733", // Orange-Red
+    "#33FF57", // Green
+    "#3357FF", // Blue
+    "#FF33A6", // Pink
+    "#33FFF1", // Cyan
+    "#FFC733", // Yellow
+    "#8C33FF", // Purple
+    "#FF8633", // Orange
+    "#33D1FF", // Sky Blue
+    "#FF338A", // Magenta
   ];
 
   return (
-    <div className="bg-stone-800 absolute w-[4vw] right-[4vw] h-[50vh] text-white rounded-3xl flex flex-col justify-around items-center ">
-      {tools.map((e) => {
-        return (
-          <button key={e.tool} onClick={() => handleToolClick(e.tool)}>
-            {e.logo}
-          </button>
-        );
-      })}
+    <div className=" absolute w-[4vw] right-[4vw] min-h-[50vh] text-white rounded-3xl flex flex-col justify-around items-center">
+      {strokeColors.map((color, i) => (
+        <div
+          key={i}
+          onClick={() => changePenColour(color)}
+          style={{ backgroundColor: color }} // Set the background color directly
+          className="w-8 h-8  duration-100 hover:scale-125 rounded-full cursor-pointer"
+        />
+      ))}
+      <Button className="my-4" onClick={handleCanvasReset}>Reset</Button>
     </div>
   );
 }

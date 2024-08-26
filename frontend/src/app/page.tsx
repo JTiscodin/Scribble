@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { usePlayerContext } from "@/contexts/PlayerContext";
-import { useSocket } from "@/contexts/Socket";
 import { GameCommands, Room, RoomMode, SocketMessages } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +25,7 @@ export default function Home() {
     });
     socket?.send(data);
     router.push("/room/" + id);
+    localStorage.setItem("username", username)
   };
 
   const handleCreateRoom = () => {

@@ -19,8 +19,8 @@ interface MyComponentProps {
 interface CanvasContextType {
   elements: any[];
   setElements: React.Dispatch<React.SetStateAction<any[]>>;
-  tool: any;
-  setTool: React.Dispatch<React.SetStateAction<any>>;
+  stroke: string;
+  setStroke: React.Dispatch<React.SetStateAction<string>>;
   stageRef: React.MutableRefObject<Konva.Stage | null>;
   isDrawing: React.MutableRefObject<boolean>;
   lines: any[];
@@ -41,7 +41,7 @@ export const useCanvasContext = () => {
 
 const CanvasContextProvider: React.FC<MyComponentProps> = ({ children }) => {
   const [elements, setElements] = useState<any[]>([]);
-  const [tool, setTool] = useState<any>(Tool.Default);
+  const [stroke, setStroke] = useState<string>("#df4b26")
   const stageRef = useRef<Konva.Stage | null>(null);
   const [lines, setLines] = useState<any[]>([]);
   const isDrawing = useRef<boolean>(false);
@@ -51,8 +51,8 @@ const CanvasContextProvider: React.FC<MyComponentProps> = ({ children }) => {
       value={{
         elements,
         setElements,
-        tool,
-        setTool,
+        stroke,
+        setStroke,
         isDrawing,
         stageRef,
         lines,

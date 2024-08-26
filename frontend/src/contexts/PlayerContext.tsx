@@ -23,7 +23,9 @@ interface PlayerContextProviderProps {
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
-  const [username, setUsername] = useState<string>("");
+  const [username, setUsername] = useState<string>(
+    localStorage.getItem("username") || ""
+  );
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {

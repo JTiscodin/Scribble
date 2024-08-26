@@ -1,52 +1,50 @@
 import { useCanvasContext } from "@/contexts/CanvasContext";
-import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Rect, Circle, Transformer, Line } from "react-konva";
-import Rectangle from "./CanvasElements/Rectangle";
-import Konva from "konva";
-import { Tool } from "@/lib/types";
 
-const initialRectangles = [
-  {
-    x: 10,
-    y: 10,
-    width: 100,
-    height: 100,
-    fill: "red",
-    id: "rect1",
-  },
-  {
-    x: 150,
-    y: 150,
-    width: 100,
-    height: 100,
-    fill: "green",
-    id: "rect2",
-  },
-];
+import { Stage, Layer, Rect, Circle, Transformer, Line } from "react-konva";
+
+import { usePlayerContext } from "@/contexts/PlayerContext";
+import { MessageTypes, SocketMessages } from "@/lib/types";
+import { useEffect } from "react";
 
 export default function Canvas() {
-  const { elements, setElements, isDrawing, stageRef, lines, setLines, tool } =
-    useCanvasContext();
-  const [rectangles, setRectangles] = useState(initialRectangles);
-  const [selectedId, selectShape] = useState<String>("");
+  const {
+    elements,
+    setElements,
+    isDrawing,
+    stageRef,
+    lines,
+    setLines,
+    stroke,
+    setStroke,
+  } = useCanvasContext();
 
-  const handleMouseDown = (e: any) => {
-    if (tool === Tool.Pen) {
-      isDrawing.current = true;
-      const pos = e.target.getStage().getPointerPosition();
-      setLines((prev) => [...prev, { points: [pos.x, pos.y] }]);
-    }
-    console.log("mouse is down");
-  };
+  const { socket, username } = usePlayerContext();
 
   useEffect(() => {
-    var json =
-      '{"attrs":{"width":578,"height":200},"className":"Stage","children":[{"attrs":{},"className":"Layer","children":[{"attrs":{"x":100,"y":100,"sides":6,"radius":70,"fill":"red","stroke":"black","strokeWidth":4},"className":"RegularPolygon"}]}]}';
-  }, []);
+    if (socket) {
+      socket.onmessage = async (evt) => {
+        try {
+          const msg: MessageTypes = JSON.parse(evt.data);
+          console.log(msg);
+          if (msg.type === SocketMessages.CANVAS_UPDATED) {
+            setLines(msg.canvas);
+          }
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
+      };
+    }
+  }, [socket]);
+
+  const handleMouseDown = (e: any) => {
+    isDrawing.current = true;
+    const pos = e.target.getStage().getPointerPosition();
+    setLines((prev) => [...prev, { points: [pos.x, pos.y], stroke }]);
+  };
 
   const handleMouseUp = () => {
     isDrawing.current = false;
-    console.log(stageRef.current?.toJSON());
+    
   };
 
   const handleMouseMove = (e: any) => {
@@ -57,8 +55,15 @@ export default function Canvas() {
     const point = stage.getPointerPosition();
     let lastLine = lines[lines.length - 1];
     lastLine.points = lastLine.points.concat([point.x, point.y]);
+    //replacing the last line with the new line
     lines.splice(lines.length - 1, 1, lastLine);
+    //We use lines.concat() because it returns a shallow copy of the lines array we just modified
     setLines(lines.concat());
+    const data = JSON.stringify({
+      type: SocketMessages.CANVAS_CHANGE,
+      canvas: lines,
+    });
+    socket?.send(data);
   };
 
   return (
@@ -77,7 +82,7 @@ export default function Canvas() {
             <Line
               key={i}
               points={line.points}
-              stroke="#df4b26"
+              stroke={line.stroke}
               strokeWidth={5}
               tension={0.5}
               lineCap="round"

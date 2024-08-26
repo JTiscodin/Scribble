@@ -17,7 +17,7 @@ const rooms: Room[] = [];
 
 wss.on("connection", (ws: WebSocket) => {
   console.log("New cliend connected");
-  console.log("Total connected clients " + wss.clients.size)
+  console.log("Total connected clients " + wss.clients.size);
 
   ws.on("message", (data: any) => {
     const message: MessageTypes = JSON.parse(data);
@@ -53,14 +53,26 @@ wss.on("connection", (ws: WebSocket) => {
         const room = rooms.find((room) => room.id === message.roomId);
 
         room?.addPlayer({ socket: ws, username: message.username });
-
-        console.log(
-          "added player " + message.username + "to room " + room?.roomName
-        );
+        break;
+      }
+      case SocketMessages.LEAVE_ROOM: {
+        const room = rooms.find((room) => room.id === message.roomId);
+        if (room) {
+          room.removePlayer({ socket: ws, username: message.username });
+        }
         break;
       }
       case SocketMessages.CANVAS_CHANGE: {
-        console.log("changing canvas to " + message.canvas);
+        const data = JSON.stringify({
+          type: SocketMessages.CANVAS_UPDATED,
+          canvas: message.canvas,
+        });
+        wss.clients.forEach((client) => {
+          if (client != ws && client.readyState === WebSocket.OPEN) {
+            client.send(data);
+          }
+        });
+
         break;
       }
       case SocketMessages.END_GAME: {
@@ -70,8 +82,7 @@ wss.on("connection", (ws: WebSocket) => {
       default:
         console.log("Unknown message type");
     }
-    console.log("recieved msg: " + message);
-    ws.send("Server recieved your message " + message);
+    ws.send("Server recieved your message " + JSON.stringify(message));
   });
 
   ws.on("close", () => {
@@ -85,10 +96,20 @@ app.get("/rooms", (req, res) => {
     return {
       id: room.id,
       name: room.roomName,
+      host: room.host,
     };
   });
 
   return res.json(roomArr);
+});
+
+app.get("/players/:roomId", async (req, res) => {
+  const roomId = req.params.roomId;
+  const room = rooms.find((room) => room.id === roomId);
+  const players = Array.from(room?.players || []);
+  if (room) {
+    res.json({ players, host: room.host });
+  }
 });
 
 const PORT = 5000;
