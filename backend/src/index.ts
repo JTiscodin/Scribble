@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { Room } from "./Room";
-import { MessageTypes, SocketMessages } from "./types";
+import { MessageTypes, ServerMessages, SocketMessages } from "./types";
 import { Game } from "./Game";
 import express from "express";
 import cors from "cors";
@@ -24,27 +24,45 @@ wss.on("connection", (ws: WebSocket) => {
 
     switch (message.type) {
       case SocketMessages.CREATE_ROOM: {
+        //Check if the the roomName and username length is not empty
+        if (message.roomName.length == 0 && message.username.length == 0) {
+          //handle errors here
+          break;
+        }
+
         const room = new Room(
           { socket: ws, username: message.username },
           message.roomName
         );
+        const data = JSON.stringify({
+          type: ServerMessages.ROOM_CREATED,
+          roomId: room.id,
+        });
+
+        //Sending the confirmation that it room is created to the person created it.
+        ws.send(data);
         rooms.push(room);
         console.log("created new room " + room.roomName);
         console.log("the room id is :" + room.id);
         break;
       }
-      case SocketMessages.START_GAME: {
-        //Error handling for multiple cases
 
+      case SocketMessages.START_GAME: {
         //Start a game in a particular room
         const room = rooms.find((room) => room.id === message.roomId);
 
-        if (room) {
+        //Check if the initiator of start game is a host or not.
+        if (room && room.host.username === message.username) {
           const game = new Game(room);
           room.game = game;
-          game.startGame(2000);
+          const data = JSON.stringify({
+            type: ServerMessages.GAME_STARTED,
+            drawer: game.drawer,
+          });
+          room.players.forEach((player) => player.socket?.send(data));
+          // game.startGame(2000);
         } else {
-          //handle room not found
+          //TODO:handle room not found or other errors
         }
 
         break;
@@ -52,7 +70,18 @@ wss.on("connection", (ws: WebSocket) => {
       case SocketMessages.JOIN_ROOM: {
         const room = rooms.find((room) => room.id === message.roomId);
 
-        room?.addPlayer({ socket: ws, username: message.username });
+        if (room) {
+          room?.addPlayer({ socket: ws, username: message.username });
+          const players = Array.from(room.players)
+          const data = JSON.stringify({
+            type: ServerMessages.PLAYER_ADDED,
+            players
+          });
+          room.players.forEach((player) => {
+            if (player.username !== message.username) player.socket?.send(data);
+          });
+        }
+
         break;
       }
       case SocketMessages.LEAVE_ROOM: {
@@ -63,16 +92,25 @@ wss.on("connection", (ws: WebSocket) => {
         break;
       }
       case SocketMessages.CANVAS_CHANGE: {
-        const data = JSON.stringify({
-          type: SocketMessages.CANVAS_UPDATED,
-          canvas: message.canvas,
-        });
-        wss.clients.forEach((client) => {
-          if (client != ws && client.readyState === WebSocket.OPEN) {
-            client.send(data);
-          }
-        });
+        const room = rooms.find((room) => room.id === message.roomId);
+        if (room && message.username === room?.game?.drawer.username) {
+          //change the canvas of the room
+          const data = JSON.stringify({
+            type: ServerMessages.CANVAS_UPDATED,
+            canvas: message.canvas,
+          });
+          wss.clients.forEach((client) => {
+            if (client != ws && client.readyState === WebSocket.OPEN) {
+              client.send(data);
+            }
+          });
+        } else {
+          //handle errors
+        }
 
+        break;
+      }
+      case SocketMessages.CHECK_ANSWER: {
         break;
       }
       case SocketMessages.END_GAME: {

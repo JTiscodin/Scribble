@@ -1,3 +1,4 @@
+import { Interface } from "readline";
 import WebSocket from "ws";
 
 interface CreateRoomMessage {
@@ -8,11 +9,14 @@ interface CreateRoomMessage {
 
 interface StartGameMessage {
   type: SocketMessages.START_GAME;
+  username: string;
   roomId: string;
 }
 
 interface CanvasChangeMessage {
   type: SocketMessages.CANVAS_CHANGE;
+  username: string;
+  roomId: string;
   canvas: Canvas;
 }
 
@@ -29,12 +33,8 @@ interface JoinRoomMessage {
 
 interface CheckAnswer {
   type: SocketMessages.CHECK_ANSWER;
+  roomId: string;
   answer: string;
-}
-
-interface CanvasUpdated {
-  type: SocketMessages.CANVAS_UPDATED;
-  canvas: string;
 }
 
 interface LeaveRoomMessage {
@@ -50,7 +50,46 @@ export type MessageTypes =
   | JoinRoomMessage
   | CanvasChangeMessage
   | LeaveRoomMessage
-  | CanvasUpdated;
+  | CheckAnswer;
+
+//Server messagese that will be sent to the sockets on frontend
+interface CanvasUpdated {
+  type: ServerMessages.CANVAS_UPDATED;
+  canvas: string;
+}
+
+interface PlayerAddedMessage {
+  type: ServerMessages.PLAYER_ADDED;
+  players: Player[];
+}
+
+interface GameStartedMessage {
+  type: ServerMessages.GAME_STARTED;
+  drawer: Player;
+}
+
+interface GameEndedMessage {
+  type: ServerMessages.GAME_ENDED;
+  winner: Player;
+}
+
+interface PlayerLeftMessage {
+  type: ServerMessages.PLAYER_LEFT;
+  players: Player[];
+}
+
+interface RoomCreated {
+  type: ServerMessages.ROOM_CREATED;
+  roomId: string
+}
+
+export type ServerMessageTypes =
+  | CanvasUpdated
+  | PlayerAddedMessage
+  | GameStartedMessage
+  | GameEndedMessage
+  | PlayerLeftMessage
+  | RoomCreated
 
 export enum Tool {
   Default = "Default",
@@ -95,7 +134,19 @@ export enum SocketMessages {
   CANVAS_CHANGE,
   CHECK_ANSWER,
   LEAVE_ROOM,
+}
+
+export enum ServerMessages {
+  PLAYER_ADDED,
+  PLAYER_LEFT,
+  GAME_STARTED,
   CANVAS_UPDATED,
+  ANSWER_CHECKED,
+  ROOM_CREATED,
+  GAME_ENDED,
+  CHOOSE_WORD,
+  NEW_DRAWER,
+  WORD_CHOSEN,
 }
 
 export type Canvas = {};

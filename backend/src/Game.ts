@@ -3,12 +3,11 @@ import { Player } from "./types";
 import { v4 as uuid } from "uuid";
 
 export class Game {
-  timer: any;
   private id: string;
   private Canvas: string;
   public room: Room;
   public players: Player[];
-  private drawer: Player;
+  public drawer: Player;
   private host: Player;
 
   constructor(room: Room) {
@@ -34,12 +33,11 @@ export class Game {
 
   startGame(time: number) {
     //start the timer and the game
-    this.timer = setTimeout(() => {
-      return this.endGame();
-    }, time);
   }
 
   endGame() {
     //End the game
+    //send messages from the server and redirect the users to the waiting page
+
   }
 }

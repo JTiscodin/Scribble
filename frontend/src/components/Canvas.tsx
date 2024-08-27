@@ -3,10 +3,15 @@ import { useCanvasContext } from "@/contexts/CanvasContext";
 import { Stage, Layer, Rect, Circle, Transformer, Line } from "react-konva";
 
 import { usePlayerContext } from "@/contexts/PlayerContext";
-import { MessageTypes, SocketMessages } from "@/lib/types";
+import {
+  MessageTypes,
+  ServerMessages,
+  ServerMessageTypes,
+  SocketMessages,
+} from "@/lib/types";
 import { useEffect } from "react";
 
-export default function Canvas() {
+export default function Canvas({ roomId }: { roomId: string }) {
   const {
     elements,
     setElements,
@@ -24,9 +29,9 @@ export default function Canvas() {
     if (socket) {
       socket.onmessage = async (evt) => {
         try {
-          const msg: MessageTypes = JSON.parse(evt.data);
+          const msg: ServerMessageTypes = JSON.parse(evt.data);
           console.log(msg);
-          if (msg.type === SocketMessages.CANVAS_UPDATED) {
+          if (msg.type === ServerMessages.CANVAS_UPDATED) {
             setLines(msg.canvas);
           }
         } catch (error) {
@@ -44,26 +49,31 @@ export default function Canvas() {
 
   const handleMouseUp = () => {
     isDrawing.current = false;
-    
   };
 
   const handleMouseMove = (e: any) => {
     if (!isDrawing.current) {
       return;
     }
-    const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
-    let lastLine = lines[lines.length - 1];
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
-    //replacing the last line with the new line
-    lines.splice(lines.length - 1, 1, lastLine);
-    //We use lines.concat() because it returns a shallow copy of the lines array we just modified
-    setLines(lines.concat());
-    const data = JSON.stringify({
-      type: SocketMessages.CANVAS_CHANGE,
-      canvas: lines,
-    });
-    socket?.send(data);
+    try {
+      const stage = e.target.getStage();
+      const point = stage.getPointerPosition();
+      let lastLine = lines[lines.length - 1];
+      lastLine.points = lastLine.points.concat([point.x, point.y]);
+      //replacing the last line with the new line
+      lines.splice(lines.length - 1, 1, lastLine);
+      //We use lines.concat() because it returns a shallow copy of the lines array we just modified
+      setLines(lines.concat());
+      const data = JSON.stringify({
+        type: SocketMessages.CANVAS_CHANGE,
+        canvas: lines,
+        username,
+        roomId: roomId,
+      });
+      socket?.send(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

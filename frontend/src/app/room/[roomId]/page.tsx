@@ -3,9 +3,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Player, SocketMessages } from "@/lib/types";
+import {
+  Player,
+  ServerMessages,
+  ServerMessageTypes,
+  SocketMessages,
+} from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { usePlayerContext } from "@/contexts/PlayerContext";
+import { useToast } from "@/components/ui/use-toast";
 export default function Room() {
   //Implement the room page
   /* 
@@ -17,7 +23,8 @@ export default function Room() {
   const [players, setPlayers] = useState<Player[]>([]);
   const router = useRouter();
   const { username, socket } = usePlayerContext();
-  const [host, setHost] = useState<Player | null>(null)
+  const [host, setHost] = useState<Player | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     console.log(params.roomId);
@@ -30,11 +37,32 @@ export default function Room() {
       );
       const data = await response.json();
       setPlayers(data.players);
-      setHost(data.host)
+      setHost(data.host);
     };
 
     getPlayers();
   }, [params.roomId]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.onmessage = async (evt) => {
+        try {
+          const message: ServerMessageTypes = JSON.parse(evt.data);
+          if (message.type === ServerMessages.GAME_STARTED) {
+            //router the user to the game page
+            router.push("/room/" + params.roomId + "/game");
+          } else if (message.type === ServerMessages.PLAYER_ADDED) {
+            toast({
+              title: "New Player added",
+            });
+            setPlayers(message.players);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      };
+    }
+  }, [socket]);
 
   const handleLeaveRoom = async () => {
     const data = JSON.stringify({
@@ -44,6 +72,15 @@ export default function Room() {
     });
     socket?.send(data);
     router.push("/");
+  };
+
+  const startGame = async () => {
+    const data = JSON.stringify({
+      type: SocketMessages.START_GAME,
+      username,
+      roomId: params.roomId,
+    });
+    socket?.send(data);
   };
 
   return (
@@ -58,7 +95,9 @@ export default function Room() {
               players.map((player: Player, i) => {
                 return (
                   <div className="my-2" key={i}>
-                    {player.username === host?.username ? `${player.username} (host)` : player.username}
+                    {player.username === host?.username
+                      ? `${player.username} (host)`
+                      : player.username}
                     <hr />
                   </div>
                 );
@@ -67,7 +106,9 @@ export default function Room() {
         </CardHeader>
       </Card>
 
-      {username === host?.username &&<Button>Start Game</Button>}
+      {username === host?.username && (
+        <Button onClick={startGame}>Start Game</Button>
+      )}
       <Button onClick={handleLeaveRoom}>Leave Room</Button>
     </div>
   );

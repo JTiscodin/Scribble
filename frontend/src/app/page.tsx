@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { usePlayerContext } from "@/contexts/PlayerContext";
-import { GameCommands, Room, RoomMode, SocketMessages } from "@/lib/types";
+import {
+  GameCommands,
+  Room,
+  RoomMode,
+  ServerMessages,
+  ServerMessageTypes,
+  SocketMessages,
+} from "@/lib/types";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -25,7 +32,7 @@ export default function Home() {
     });
     socket?.send(data);
     router.push("/room/" + id);
-    localStorage.setItem("username", username)
+    localStorage.setItem("username", username);
   };
 
   const handleCreateRoom = () => {
@@ -46,6 +53,20 @@ export default function Home() {
     });
     socket?.send(data);
   };
+
+  useEffect(() => {
+    if (socket) {
+      socket.onmessage = (evt) => {
+        try {
+          const msg: ServerMessageTypes = JSON.parse(evt.data);
+          if (msg.type === ServerMessages.ROOM_CREATED) {
+            //push the host to the room
+            router.push("/room/" + msg.roomId);
+          }
+        } catch (error) {}
+      };
+    }
+  }, [socket]);
 
   const handleGameSubmit = (e: any) => {
     e.preventDefault();
@@ -100,10 +121,10 @@ export default function Home() {
           </CardHeader>
         </Card>
         {rooms.length != 0 && (
-          <Card>
+          <Card className="">
             <CardHeader>
               <CardTitle>Available rooms</CardTitle>
-              <CardContent className="flex flex-col gap-2">
+              <CardContent className="flex flex-col gap-2 h-[50vh] overflow-y-auto">
                 {rooms.map((room: Room) => {
                   return (
                     <Button

@@ -41,7 +41,7 @@ export const useCanvasContext = () => {
 
 const CanvasContextProvider: React.FC<MyComponentProps> = ({ children }) => {
   const [elements, setElements] = useState<any[]>([]);
-  const [stroke, setStroke] = useState<string>("#df4b26")
+  const [stroke, setStroke] = useState<string>("#FF5733")
   const stageRef = useRef<Konva.Stage | null>(null);
   const [lines, setLines] = useState<any[]>([]);
   const isDrawing = useRef<boolean>(false);
