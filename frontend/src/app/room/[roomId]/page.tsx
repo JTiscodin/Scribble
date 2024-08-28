@@ -84,32 +84,36 @@ export default function Room() {
   };
 
   return (
-    <div className="w-screen min-h-screen gap-7 flex justify-center items-center">
-      {/* Sidebar */}
-      <Card className="min-w-[40vw]">
-        <CardHeader>
-          <CardTitle>Players</CardTitle>
-          <hr />
-          <CardContent>
-            {players.length != 0 &&
-              players.map((player: Player, i) => {
-                return (
-                  <div className="my-2" key={i}>
-                    {player.username === host?.username
-                      ? `${player.username} (host)`
-                      : player.username}
-                    <hr />
-                  </div>
-                );
-              })}
-          </CardContent>
-        </CardHeader>
-      </Card>
+    <div className=" w-screen min-h-screen flex flex-col justify-center items-center">
+      <div className=" gap-7 flex justify-center items-center">
+        {/* Sidebar */}
+        <Card className="min-w-[40vw]">
+          <CardHeader>
+            <CardTitle>Players</CardTitle>
+            <hr />
+            <CardContent>
+              {players.length != 0 &&
+                players.map((player: Player, i) => {
+                  return (
+                    <div className="my-2" key={i}>
+                      {player.username === host?.username
+                        ? `${player.username} (host)`
+                        : player.username}
+                      <hr />
+                    </div>
+                  );
+                })}
+            </CardContent>
+          </CardHeader>
+        </Card>
 
-      {username === host?.username && (
-        <Button onClick={startGame}>Start Game</Button>
-      )}
-      <Button onClick={handleLeaveRoom}>Leave Room</Button>
+        {username === host?.username && (
+          <Button onClick={startGame}>Start Game</Button>
+        )}
+        <Button onClick={handleLeaveRoom}>Leave Room</Button>
+      </div>
+      <h1>Share the below link to your friends</h1>
+      <p>{`http://localhost:3000/?roomId=${params.roomId}`}</p>
     </div>
   );
 }

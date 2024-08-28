@@ -12,7 +12,7 @@ import {
   ServerMessageTypes,
   SocketMessages,
 } from "@/lib/types";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
@@ -23,8 +23,11 @@ export default function Home() {
 
   const { socket, username, setUsername } = usePlayerContext();
 
-  const handleJoinRoom = (id: string) => {
+  const params = useSearchParams();
+
+  const handleJoinRoom = () => {
     //write logic to join a room
+    const id = params.get("roomId")
     const data = JSON.stringify({
       type: SocketMessages.JOIN_ROOM,
       roomId: id,
@@ -107,39 +110,26 @@ export default function Home() {
                 <Input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  placeholder="Username"
                 />
-                <Input
-                  value={msg}
-                  onChange={(e) => setMsg(e.target.value)}
-                  placeholder="Enter msg"
-                />
-                <Button>Play Random Game</Button>
-                <Button>Start a Private Game</Button>
+                {!params.has("roomId") && (
+                  <Input
+                    value={msg}
+                    onChange={(e) => setMsg(e.target.value)}
+                    placeholder="Room name"
+                  />
+                )}
+                <Button
+                  onClick={() =>
+                    params.has("roomId") ? handleJoinRoom() : handleCreateRoom()
+                  }
+                >
+                  {params.has("roomId") ? "Join Game" : "Create Room"}
+                </Button>
               </form>
             </CardContent>
           </CardHeader>
         </Card>
-        {rooms.length != 0 && (
-          <Card className="">
-            <CardHeader>
-              <CardTitle>Available rooms</CardTitle>
-              <CardContent className="flex flex-col gap-2 h-[50vh] overflow-y-auto">
-                {rooms.map((room: Room) => {
-                  return (
-                    <Button
-                      onClick={() => handleJoinRoom(room.id)}
-                      key={room.id}
-                    >
-                      <h1>{room.name}</h1>
-                      <hr />
-                    </Button>
-                  );
-                })}
-              </CardContent>
-            </CardHeader>
-          </Card>
-        )}
       </div>
       <div className=" flex justify-evenly">
         <Button onClick={handleCreateRoom}>Create Room</Button>

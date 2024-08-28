@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
   ReactNode,
@@ -24,7 +24,8 @@ interface PlayerContextProviderProps {
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
-  const router = useRouter()
+  const params = useSearchParams();
+  const router = useRouter();
   const [username, setUsername] = useState<string>(
     localStorage.getItem("username") || ""
   );
@@ -33,7 +34,10 @@ const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:8080/");
     setSocket(socket);
-    router.push("/")
+
+    if (!params.has("roomId")) {
+      router.push("/");
+    }
 
     socket.onmessage = (evt) => {
       console.log(evt.data);
