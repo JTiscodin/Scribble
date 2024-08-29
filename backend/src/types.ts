@@ -80,7 +80,12 @@ interface PlayerLeftMessage {
 
 interface RoomCreated {
   type: ServerMessages.ROOM_CREATED;
-  roomId: string
+  roomId: string;
+}
+
+interface chooseWord {
+  type: ServerMessages.CHOOSE_WORD;
+  words: string[];
 }
 
 export type ServerMessageTypes =
@@ -90,6 +95,7 @@ export type ServerMessageTypes =
   | GameEndedMessage
   | PlayerLeftMessage
   | RoomCreated
+  | chooseWord;
 
 export enum Tool {
   Default = "Default",

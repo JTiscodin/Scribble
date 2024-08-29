@@ -1,14 +1,16 @@
 import { Room } from "./Room";
-import { Player } from "./types";
+import { Canvas, Player, ServerMessages } from "./types";
 import { v4 as uuid } from "uuid";
 
 export class Game {
   private id: string;
-  private Canvas: string;
+  public canvas: Canvas;
   public room: Room;
   public players: Player[];
   public drawer: Player;
   private host: Player;
+  private words: string[];
+  private chosenWord: string | null;
 
   constructor(room: Room) {
     this.id = uuid();
@@ -16,13 +18,25 @@ export class Game {
     this.players = Array.from(room.players);
     this.drawer = room.host;
     this.host = room.host;
-    this.Canvas = "";
+    this.canvas = "";
+    this.words = ["Cat", "Dog", "Light", "Sun", "Straw"];
+    this.chosenWord = null;
   }
 
-  updateCanvas(canvas: string) {
+  chooseWord(){
+    const data = JSON.stringify({type: ServerMessages.CHOOSE_WORD, })
+    this.players.forEach((player) => {
+      // player.socket?.send()
+    })
+  }
+
+  updateCanvas(canvas: Canvas, username: string) {
     //Update the canvas
-    this.Canvas = canvas;
-    //send all people the canvas, except for the drawer
+    if (username === this.drawer.username) {
+      this.canvas = canvas;
+    }else{
+      //handle errors
+    }
   }
 
   chooseDrawer() {
@@ -38,6 +52,5 @@ export class Game {
   endGame() {
     //End the game
     //send messages from the server and redirect the users to the waiting page
-
   }
 }

@@ -72,10 +72,10 @@ wss.on("connection", (ws: WebSocket) => {
 
         if (room) {
           room?.addPlayer({ socket: ws, username: message.username });
-          const players = Array.from(room.players)
+          const players = Array.from(room.players);
           const data = JSON.stringify({
             type: ServerMessages.PLAYER_ADDED,
-            players
+            players,
           });
           room.players.forEach((player) => {
             if (player.username !== message.username) player.socket?.send(data);
@@ -88,16 +88,27 @@ wss.on("connection", (ws: WebSocket) => {
         const room = rooms.find((room) => room.id === message.roomId);
         if (room) {
           room.removePlayer({ socket: ws, username: message.username });
+
+          //Creating latest array after removing the player
+          const players = Array.from(room.players);
+          const data = JSON.stringify({
+            type: ServerMessages.PLAYER_LEFT,
+            players: players,
+          });
+          room.players.forEach((player) => {
+            if (player.username !== message.username) player.socket?.send(data);
+          });
         }
         break;
       }
       case SocketMessages.CANVAS_CHANGE: {
         const room = rooms.find((room) => room.id === message.roomId);
-        if (room && message.username === room?.game?.drawer.username) {
+        if (room && room.game) {
           //change the canvas of the room
+          room.game.updateCanvas(message.canvas, message.username);
           const data = JSON.stringify({
             type: ServerMessages.CANVAS_UPDATED,
-            canvas: message.canvas,
+            canvas: room.game.canvas,
           });
           wss.clients.forEach((client) => {
             if (client != ws && client.readyState === WebSocket.OPEN) {
