@@ -38,21 +38,12 @@ export default function Home() {
     localStorage.setItem("username", username);
   };
 
-  const handleCreateRoom = () => {
+  const handleCreateRoom = async () => {
     //handle create room
     const data = JSON.stringify({
       type: SocketMessages.CREATE_ROOM,
       roomName: msg,
       username,
-    });
-    socket?.send(data);
-  };
-
-  const handleChangeinCanvas = () => {
-    //send the canvas here
-    const data = JSON.stringify({
-      type: SocketMessages.CANVAS_CHANGE,
-      canvas: "something",
     });
     socket?.send(data);
   };
@@ -85,16 +76,6 @@ export default function Home() {
     };
     // socket?.send(JSON.stringify(data));
   };
-
-  useEffect(() => {
-    const getRooms = async () => {
-      const response = await fetch("http://localhost:5000/rooms");
-      const data = await response.json();
-      setRooms(data);
-    };
-
-    getRooms();
-  });
 
   return (
     <div className="min-h-screen w-screen flex flex-col justify-center items-center">
@@ -131,11 +112,7 @@ export default function Home() {
           </CardHeader>
         </Card>
       </div>
-      <div className=" flex justify-evenly">
-        <Button onClick={handleCreateRoom}>Create Room</Button>
-        <Button>Join Room</Button>
-        <Button onClick={handleChangeinCanvas}>Change Canvas</Button>
-      </div>
+
     </div>
   );
 }

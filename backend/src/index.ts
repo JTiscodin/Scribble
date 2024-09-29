@@ -122,6 +122,11 @@ wss.on("connection", (ws: WebSocket) => {
         break;
       }
       case SocketMessages.CHECK_ANSWER: {
+        const room = rooms.find((room) => room.id === message.roomId)
+        if(room && room.game){
+          //Performing the checkAnswer method if room is found
+          room.game?.checkAnswer(message.answer, {socket: ws, username: message.username})
+        }
         break;
       }
       case SocketMessages.END_GAME: {

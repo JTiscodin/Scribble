@@ -10,6 +10,7 @@ import {
   SocketMessages,
 } from "@/lib/types";
 import { useEffect } from "react";
+import { useGameContext } from "@/contexts/GameContext";
 
 export default function Canvas({ roomId }: { roomId: string }) {
   const {
@@ -23,16 +24,20 @@ export default function Canvas({ roomId }: { roomId: string }) {
     setStroke,
   } = useCanvasContext();
 
+  const { drawer, setChat } = useGameContext();
+
   const { socket, username } = usePlayerContext();
 
   useEffect(() => {
     if (socket) {
       socket.onmessage = async (evt) => {
         try {
-          const msg: ServerMessageTypes = JSON.parse(evt.data);
-          console.log(msg);
+          const msg: ServerMessageTypes = await JSON.parse(evt.data);
+          console.log(msg.type)
           if (msg.type === ServerMessages.CANVAS_UPDATED) {
             setLines(msg.canvas);
+          }else if(msg.type === ServerMessages.CHAT_UPDATED){
+            setChat(msg.chat)
           }
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
@@ -42,9 +47,11 @@ export default function Canvas({ roomId }: { roomId: string }) {
   }, [socket]);
 
   const handleMouseDown = (e: any) => {
-    isDrawing.current = true;
-    const pos = e.target.getStage().getPointerPosition();
-    setLines((prev) => [...prev, { points: [pos.x, pos.y], stroke }]);
+    if (username === drawer?.username) {
+      isDrawing.current = true;
+      const pos = e.target.getStage().getPointerPosition();
+      setLines((prev) => [...prev, { points: [pos.x, pos.y], stroke }]);
+    }
   };
 
   const handleMouseUp = () => {
@@ -78,7 +85,7 @@ export default function Canvas({ roomId }: { roomId: string }) {
 
   return (
     <Stage
-      className="border-2 border-green-600 rounded-3xl w-[70vw] h-[90vh] overflow-hidden bg-gray-50"
+      className="border-2 border-green-600 rounded-3xl w-[50vw] h-[80vh] overflow-hidden bg-gray-50"
       ref={stageRef}
       width={2000}
       height={2000}

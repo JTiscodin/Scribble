@@ -7,9 +7,9 @@ import { useParams } from "next/navigation";
 export default function ToolsList() {
   const { stroke, setStroke, setLines, lines } = useCanvasContext();
 
-  const { socket, username  } = usePlayerContext();
+  const { socket, username } = usePlayerContext();
 
-  const {roomId} = useParams()
+  const { roomId } = useParams();
 
   const changePenColour = (stroke: string) => {
     setStroke(stroke);
@@ -22,7 +22,7 @@ export default function ToolsList() {
         type: SocketMessages.CANVAS_CHANGE,
         canvas: [],
         username,
-        roomId: roomId
+        roomId: roomId,
       });
       socket.send(data);
     }
@@ -42,16 +42,20 @@ export default function ToolsList() {
   ];
 
   return (
-    <div className=" absolute w-[4vw] right-[4vw] min-h-[50vh] text-white rounded-3xl flex flex-col justify-around items-center">
+    <div className=" text-white rounded-3xl flex  justify-around items-center">
       {strokeColors.map((color, i) => (
         <div
           key={i}
           onClick={() => changePenColour(color)}
           style={{ backgroundColor: color }} // Set the background color directly
-        className={`w-8 h-8 my-1 ${color === stroke ? "border-2 scale-125 border-black" : ""}  duration-100 hover:scale-125 rounded-full cursor-pointer`}
+          className={`w-8 h-8 my-1 ${
+            color === stroke ? "border-2 scale-125 border-black" : ""
+          }  duration-100 hover:scale-125 rounded-full cursor-pointer`}
         />
       ))}
-      <Button className="my-4" onClick={handleCanvasReset}>Reset</Button>
+      <Button className="my-4" onClick={handleCanvasReset}>
+        R
+      </Button>
     </div>
   );
 }

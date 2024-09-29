@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { useToast } from "@/components/ui/use-toast";
+import { useGameContext } from "@/contexts/GameContext";
 export default function Room() {
   //Implement the room page
   /* 
@@ -20,10 +21,11 @@ export default function Room() {
   3. Let's just display player's name initially.
   */
   const params = useParams();
-  const [players, setPlayers] = useState<Player[]>([]);
+
+  const { setHost, host, players, setPlayers, startGame } = useGameContext();
+
   const router = useRouter();
   const { username, socket } = usePlayerContext();
-  const [host, setHost] = useState<Player | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,12 +38,13 @@ export default function Room() {
         "http://localhost:5000/players/" + params.roomId
       );
       const data = await response.json();
+      console.log(data);
       setPlayers(data.players);
       setHost(data.host);
     };
 
     getPlayers();
-  }, [params.roomId]);
+  }, [params.roomId, setPlayers]);
 
   useEffect(() => {
     if (socket) {
@@ -54,6 +57,11 @@ export default function Room() {
           } else if (message.type === ServerMessages.PLAYER_ADDED) {
             toast({
               title: "New Player added",
+            });
+            setPlayers(message.players);
+          } else if (message.type === ServerMessages.PLAYER_LEFT) {
+            toast({
+              title: "Player Left",
             });
             setPlayers(message.players);
           }
@@ -74,14 +82,14 @@ export default function Room() {
     router.push("/");
   };
 
-  const startGame = async () => {
-    const data = JSON.stringify({
-      type: SocketMessages.START_GAME,
-      username,
-      roomId: params.roomId,
-    });
-    socket?.send(data);
-  };
+  const handleCopyLink = async () => {
+    //copy the link to clipboard
+    const link = "http://localhost:3000/?roomId=" + params.roomId
+
+    navigator.clipboard.writeText(link)
+
+    toast({title: "Copied to Clipboard"})
+  }
 
   return (
     <div className=" w-screen min-h-screen flex flex-col justify-center items-center">
@@ -112,8 +120,8 @@ export default function Room() {
         )}
         <Button onClick={handleLeaveRoom}>Leave Room</Button>
       </div>
-      <h1>Share the below link to your friends</h1>
-      <p>{`http://localhost:3000/?roomId=${params.roomId}`}</p>
+      <Button className="my-4" onClick={handleCopyLink}>Copy Link</Button>
+      {/* <p>{`http://localhost:3000/?roomId=${params.roomId}`}</p> */}
     </div>
   );
 }

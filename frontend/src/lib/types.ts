@@ -1,3 +1,4 @@
+
 interface CreateRoomMessage {
   type: SocketMessages.CREATE_ROOM;
   username: string;
@@ -28,10 +29,11 @@ interface JoinRoomMessage {
   username: string;
 }
 
-interface CheckAnswer {
+export interface CheckAnswer {
   type: SocketMessages.CHECK_ANSWER;
   roomId: string;
   answer: string;
+  username: string
 }
 
 interface LeaveRoomMessage {
@@ -39,6 +41,11 @@ interface LeaveRoomMessage {
   roomId: string;
   username: string;
 }
+
+export type Chat = {
+  username: string;
+  message: string;
+};
 
 export type MessageTypes =
   | CreateRoomMessage
@@ -52,7 +59,8 @@ export type MessageTypes =
 //Server messagese that will be sent to the sockets on frontend
 interface CanvasUpdated {
   type: ServerMessages.CANVAS_UPDATED;
-  canvas: string;
+  //handle types here 
+  canvas: any;
 }
 
 interface PlayerAddedMessage {
@@ -77,7 +85,17 @@ interface PlayerLeftMessage {
 
 interface RoomCreated {
   type: ServerMessages.ROOM_CREATED;
-  roomId: string
+  roomId: string;
+}
+
+interface chooseWord {
+  type: ServerMessages.CHOOSE_WORD;
+  words: string[];
+}
+
+interface chatUpdated {
+  type: ServerMessages.CHAT_UPDATED;
+  chat: Chat[];
 }
 
 export type ServerMessageTypes =
@@ -87,6 +105,8 @@ export type ServerMessageTypes =
   | GameEndedMessage
   | PlayerLeftMessage
   | RoomCreated
+  | chooseWord
+  | chatUpdated
 
 export enum Tool {
   Default = "Default",
@@ -143,6 +163,7 @@ export enum ServerMessages {
   GAME_ENDED,
   CHOOSE_WORD,
   NEW_DRAWER,
+  CHAT_UPDATED,
   WORD_CHOSEN,
 }
 
