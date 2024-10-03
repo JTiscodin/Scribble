@@ -1,5 +1,5 @@
 import { useCanvasContext } from "@/contexts/CanvasContext";
-
+import { useToast } from "@/components/ui/use-toast";
 import { Stage, Layer, Rect, Circle, Transformer, Line } from "react-konva";
 
 import { usePlayerContext } from "@/contexts/PlayerContext";
@@ -26,25 +26,9 @@ export default function Canvas({ roomId }: { roomId: string }) {
 
   const { drawer, setChat } = useGameContext();
 
-  const { socket, username } = usePlayerContext();
+  const {toast} = useToast();
 
-  useEffect(() => {
-    if (socket) {
-      socket.onmessage = async (evt) => {
-        try {
-          const msg: ServerMessageTypes = await JSON.parse(evt.data);
-          console.log(msg.type)
-          if (msg.type === ServerMessages.CANVAS_UPDATED) {
-            setLines(msg.canvas);
-          }else if(msg.type === ServerMessages.CHAT_UPDATED){
-            setChat(msg.chat)
-          }
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-        }
-      };
-    }
-  }, [socket]);
+  const { socket, username } = usePlayerContext();
 
   const handleMouseDown = (e: any) => {
     if (username === drawer?.username) {

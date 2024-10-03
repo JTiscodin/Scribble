@@ -17,6 +17,7 @@ import {
 import { usePlayerContext } from "./PlayerContext";
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { useCanvasContext } from "./CanvasContext";
 
 interface GameContextType {
   players: Player[];
@@ -55,13 +56,14 @@ export default function GameContextProvider({
   const [chat, setChat] = useState<Chat[]>([]);
   const [host, setHost] = useState<Player | null>(null);
   const [drawer, setDrawer] = useState<Player | null>(null);
+  const { setLines } = useCanvasContext();
 
   useEffect(() => {
     if (socket) {
       socket.onmessage = async (evt: any) => {
         try {
           const message: ServerMessageTypes = await JSON.parse(evt.data);
-          console.log(message)
+          console.log(message);
           switch (message.type) {
             case ServerMessages.GAME_STARTED: {
               router.push("/room/" + params.roomId + "/game");
@@ -75,6 +77,10 @@ export default function GameContextProvider({
               setPlayers(message.players);
               break;
             }
+            case ServerMessages.CANVAS_UPDATED: {
+              setLines(message.canvas);
+              break;
+            }
             case ServerMessages.PLAYER_LEFT: {
               toast({
                 title: "Player Left",
@@ -82,14 +88,30 @@ export default function GameContextProvider({
               setPlayers(message.players);
               break;
             }
-            case ServerMessages.CHAT_UPDATED :{
-              
-              setChat(message.chat)
-              console.log('chat updated')
+            case ServerMessages.CHAT_UPDATED: {
+              setChat(message.chat);
+              break;
+            }
+            case ServerMessages.CORRECT_ANSWER: {
+              toast({
+                title: message.msg,
+              });
+              break;
+            }
+            case ServerMessages.CHOOSE_WORD: {
+              toast({
+                title: "choose word",
+              });
+              break;
+            }
+            case ServerMessages.WORD_CHOSEN: {
+              toast({
+                title: "word chosen",
+              });
               break;
             }
             default: {
-              console.log("unclear message");
+              console.log("Unclear message");
             }
           }
         } catch (e) {

@@ -19,7 +19,6 @@ export default function CanvasTest() {
   const {username} = usePlayerContext()
 
   return (
-    <CanvasContextProvider>
       <div className="min-h-screen flex flex-col justify-center items-center">
         <div className="flex h-screen gap-5 my-8  items-start justify-center ">
           {/* LeaderBoard */}
@@ -33,6 +32,5 @@ export default function CanvasTest() {
           {/* Chat */}
         </div>
       </div>
-    </CanvasContextProvider>
   );
 }

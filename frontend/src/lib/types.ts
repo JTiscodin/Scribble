@@ -1,4 +1,3 @@
-
 interface CreateRoomMessage {
   type: SocketMessages.CREATE_ROOM;
   username: string;
@@ -29,11 +28,16 @@ interface JoinRoomMessage {
   username: string;
 }
 
+interface ChoseWord {
+  type: SocketMessages.CHOOSE_WORD;
+  word: string;
+}
+
 export interface CheckAnswer {
   type: SocketMessages.CHECK_ANSWER;
   roomId: string;
   answer: string;
-  username: string
+  username: string;
 }
 
 interface LeaveRoomMessage {
@@ -54,12 +58,12 @@ export type MessageTypes =
   | JoinRoomMessage
   | CanvasChangeMessage
   | LeaveRoomMessage
-  | CheckAnswer;
+  | CheckAnswer
+  | ChoseWord;
 
 //Server messagese that will be sent to the sockets on frontend
 interface CanvasUpdated {
   type: ServerMessages.CANVAS_UPDATED;
-  //handle types here 
   canvas: any;
 }
 
@@ -98,6 +102,21 @@ interface chatUpdated {
   chat: Chat[];
 }
 
+interface correctAnswer {
+  type: ServerMessages.CORRECT_ANSWER;
+  msg: string;
+}
+
+interface RoundStarted {
+  type: ServerMessages.ROUND_STARTED;
+  timer: number; //time in milli seconds
+}
+
+interface WordChoosen {
+  type: ServerMessages.WORD_CHOSEN;
+  word: string;
+}
+
 export type ServerMessageTypes =
   | CanvasUpdated
   | PlayerAddedMessage
@@ -107,6 +126,9 @@ export type ServerMessageTypes =
   | RoomCreated
   | chooseWord
   | chatUpdated
+  | correctAnswer
+  | RoundStarted
+  | WordChoosen;
 
 export enum Tool {
   Default = "Default",
@@ -151,6 +173,7 @@ export enum SocketMessages {
   CANVAS_CHANGE,
   CHECK_ANSWER,
   LEAVE_ROOM,
+  CHOOSE_WORD,
 }
 
 export enum ServerMessages {
@@ -165,6 +188,8 @@ export enum ServerMessages {
   NEW_DRAWER,
   CHAT_UPDATED,
   WORD_CHOSEN,
+  CORRECT_ANSWER,
+  ROUND_STARTED,
 }
 
 export type Canvas = {};
