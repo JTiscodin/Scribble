@@ -39,10 +39,6 @@ const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
       router.push("/");
     }
 
-    socket.onmessage = (evt) => {
-      console.log(evt.data);
-    };
-
     return () => socket.close();
   }, []);
 

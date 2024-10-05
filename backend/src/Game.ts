@@ -38,7 +38,7 @@ export class Game {
     this.chosenWord = "Hello";
     this.chat = [];
     this.choosenDrawers = new Set<Player>();
-    // this.startGame();
+    this.startGame(30000);
   }
 
   async chooseWord() {
@@ -46,7 +46,7 @@ export class Game {
 
     //Creating an array of theree random words
     for (let i = 0; i < 3; i++) {
-      const random = Math.random() * this.words.length;
+      const random = Math.floor(Math.random() * this.words.length);
       threeWords.push(this.words[random]);
     }
     const data = JSON.stringify({
@@ -57,7 +57,7 @@ export class Game {
 
     //Choosing an automatic word if none is selected after some time
     const automaticWordChoose = setTimeout(() => {
-      const randomWord = threeWords[Math.random() * 3];
+      const randomWord = threeWords[Math.floor(Math.random() * 3)];
       this.wordChoosen(randomWord, this.drawer);
     }, 5000);
 
@@ -80,7 +80,6 @@ export class Game {
 
     const data = JSON.stringify({
       type: ServerMessages.WORD_CHOSEN,
-      
     });
 
     this.players.forEach((player) => {
@@ -133,6 +132,7 @@ export class Game {
     const availablePlayers = this.players.filter(
       (player) => !this.choosenDrawers.has(player)
     );
+    console.log(availablePlayers.length);
 
     if (availablePlayers.length === 0) {
       //end the round
@@ -140,8 +140,9 @@ export class Game {
       return;
     } else {
       //choose a random drawer
-      const randomNum = Math.random() * availablePlayers.length;
+      const randomNum = Math.floor(Math.random() * availablePlayers.length);
       this.drawer = availablePlayers[randomNum];
+      console.log(randomNum);
     }
   }
 
@@ -168,6 +169,7 @@ export class Game {
 
       rounds--;
     }
+    console.log("game ended");
   }
 
   endGame() {

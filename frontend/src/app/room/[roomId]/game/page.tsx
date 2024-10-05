@@ -9,6 +9,7 @@ import { useParams } from "next/navigation";
 import ChatBox from "@/components/ChatBox";
 import Board from "@/components/Board";
 import { useGameContext } from "@/contexts/GameContext";
+import { Modal } from "@/components/Modal";
 
 export default function CanvasTest() {
   const { roomId }: { roomId: string } = useParams();
@@ -21,11 +22,12 @@ export default function CanvasTest() {
   return (
       <div className="min-h-screen flex flex-col justify-center items-center">
         <div className="flex h-screen gap-5 my-8  items-start justify-center ">
+
           {/* LeaderBoard */}
           <Board  />
           <div className="flex flex-col  ">
             <Canvas roomId={roomId} />
-
+            <Modal/>
             {drawer?.username === username && <ToolsList />}
           </div>
           <ChatBox />
