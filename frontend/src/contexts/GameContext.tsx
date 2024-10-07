@@ -29,6 +29,8 @@ interface GameContextType {
   setChat: React.Dispatch<React.SetStateAction<Chat[]>>;
   setDrawer: React.Dispatch<React.SetStateAction<Player | null>>;
   startGame: () => void;
+  showModal: boolean;
+  modalData: any;
 }
 
 const GameContext = createContext<GameContextType>({
@@ -41,6 +43,8 @@ const GameContext = createContext<GameContextType>({
   setChat: () => {},
   setDrawer: () => {},
   startGame: () => {},
+  showModal: false,
+  modalData: "",
 });
 
 export default function GameContextProvider({
@@ -56,6 +60,8 @@ export default function GameContextProvider({
   const [chat, setChat] = useState<Chat[]>([]);
   const [host, setHost] = useState<Player | null>(null);
   const [drawer, setDrawer] = useState<Player | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(true);
+  const [modalData, setModalData] = useState<any>();
   const { setLines } = useCanvasContext();
 
   useEffect(() => {
@@ -102,16 +108,20 @@ export default function GameContextProvider({
               toast({
                 title: "choose word",
               });
+              console.log(message.words)
+              setModalData(message.words)
+              setShowModal(true)
               break;
             }
             case ServerMessages.WORD_CHOSEN: {
+              setShowModal(false)
               toast({
                 title: "word chosen",
               });
               break;
             }
             default: {
-              console.log("Unclear message");
+              console.log("Unclear message", message.type);
             }
           }
         } catch (e) {
@@ -142,6 +152,8 @@ export default function GameContextProvider({
         setDrawer,
         setHost,
         startGame,
+        showModal,
+        modalData
       }}
     >
       {children}

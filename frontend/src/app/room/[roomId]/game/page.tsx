@@ -9,30 +9,29 @@ import { useParams } from "next/navigation";
 import ChatBox from "@/components/ChatBox";
 import Board from "@/components/Board";
 import { useGameContext } from "@/contexts/GameContext";
-import { Modal } from "@/components/Modal";
+import Modal from "@/components/Modal";
 
 export default function CanvasTest() {
   const { roomId }: { roomId: string } = useParams();
 
   //Make a game context and set it to default values when game is started
-  const { drawer } = useGameContext();
+  const { drawer, showModal, modalData } = useGameContext();
 
-  const {username} = usePlayerContext()
+  const { username } = usePlayerContext();
 
   return (
-      <div className="min-h-screen flex flex-col justify-center items-center">
-        <div className="flex h-screen gap-5 my-8  items-start justify-center ">
-
-          {/* LeaderBoard */}
-          <Board  />
-          <div className="flex flex-col  ">
-            <Canvas roomId={roomId} />
-            <Modal/>
-            {drawer?.username === username && <ToolsList />}
-          </div>
-          <ChatBox />
-          {/* Chat */}
+    <div className="min-h-screen flex flex-col justify-center items-center">
+      <Modal data={modalData} showModal={showModal} />
+      <div className="flex h-screen gap-5 my-8  items-start justify-center ">
+        {/* LeaderBoard */}
+        <Board />
+        <div className="flex flex-col  ">
+          <Canvas roomId={roomId} />
+          {drawer?.username === username && <ToolsList />}
         </div>
+        <ChatBox />
+        {/* Chat */}
       </div>
+    </div>
   );
 }

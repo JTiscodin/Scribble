@@ -31,7 +31,8 @@ interface JoinRoomMessage {
 }
 
 interface ChoseWord {
-  type: SocketMessages.CHOOSE_WORD;
+  type: SocketMessages.CHOSE_WORD;
+  roomId: string
   word: string;
 }
 
@@ -63,7 +64,7 @@ export type MessageTypes =
   | CheckAnswer
   | ChoseWord;
 
-//Server messagese that will be sent to the sockets on frontend
+//Server messages that will be sent to the sockets on frontend
 interface CanvasUpdated {
   type: ServerMessages.CANVAS_UPDATED;
   canvas: any;
@@ -175,7 +176,7 @@ export enum SocketMessages {
   CANVAS_CHANGE,
   CHECK_ANSWER,
   LEAVE_ROOM,
-  CHOOSE_WORD,
+  CHOSE_WORD,
 }
 
 export enum ServerMessages {

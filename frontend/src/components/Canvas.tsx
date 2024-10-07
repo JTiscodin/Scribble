@@ -24,7 +24,7 @@ export default function Canvas({ roomId }: { roomId: string }) {
     setStroke,
   } = useCanvasContext();
 
-  const { drawer, setChat } = useGameContext();
+  const { drawer } = useGameContext();
 
   const {toast} = useToast();
 

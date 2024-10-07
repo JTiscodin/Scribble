@@ -133,6 +133,7 @@ wss.on("connection", (ws: WebSocket) => {
         //End game in a partcular room
         break;
       }
+
       default:
         console.log("Unknown message type");
     }

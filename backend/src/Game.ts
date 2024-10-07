@@ -58,21 +58,22 @@ export class Game {
     //Choosing an automatic word if none is selected after some time
     const automaticWordChoose = setTimeout(() => {
       const randomWord = threeWords[Math.floor(Math.random() * 3)];
-      this.wordChoosen(randomWord, this.drawer);
-    }, 5000);
+      this.wordChoosen(randomWord);
+    }, 10000);
 
     //cancelling autoselection when the user chooses a word
     this.drawer.socket?.on("message", (message: MessageTypes) => {
-      if (message.type === SocketMessages.CHOOSE_WORD) {
+      console.log("some message came")
+      if (message.type === SocketMessages.CHOSE_WORD) {
+        console.log("here, inside choose Word")
         const word = message.word;
         clearTimeout(automaticWordChoose);
-        this.wordChoosen(word, this.drawer);
+        this.wordChoosen(word);
       }
     });
   }
 
-  wordChoosen(word: string, player: Player) {
-    if (player.socket !== this.drawer.socket) return;
+  wordChoosen(word: string) {
 
     this.chosenWord = word;
 
@@ -142,7 +143,6 @@ export class Game {
       //choose a random drawer
       const randomNum = Math.floor(Math.random() * availablePlayers.length);
       this.drawer = availablePlayers[randomNum];
-      console.log(randomNum);
     }
   }
 
@@ -165,6 +165,8 @@ export class Game {
         time,
       });
       this.players.forEach((player) => player.socket?.send(data));
+      
+      //adding a delay for the given time
       await new Promise((resolve) => setTimeout(resolve, time));
 
       rounds--;
