@@ -28,6 +28,56 @@ export default function Room() {
   const { username, socket } = usePlayerContext();
   const { toast } = useToast();
 
+  // Load the finisher-header animation
+  useEffect(() => {
+    const loadFinisherHeader = async () => {
+      const script = document.createElement("script");
+      script.src = "/finisher-header.es5.min.js"; // Ensure this file is in the public folder
+      script.type = "text/javascript";
+      script.onload = () => {
+        new (window as any).FinisherHeader({
+          count: 10,
+          size: {
+            min: 2,
+            max: 40,
+            pulse: 0,
+          },
+          speed: {
+            x: {
+              min: 0,
+              max: 0.8,
+            },
+            y: {
+              min: 0,
+              max: 0.2,
+            },
+          },
+          colors: {
+            background: "#15182e",
+            particles: ["#ff926b", "#87ddfe", "#acaaff", "#1bffc2", "#f9a5fe"],
+          },
+          blending: "screen",
+          opacity: {
+            center: 1,
+            edge: 1,
+          },
+          skew: 0,
+          shapes: ["c", "s", "t"],
+        });
+      };
+      document.body.appendChild(script);
+    };
+
+    loadFinisherHeader();
+
+    return () => {
+      const script = document.querySelector(
+        'script[src="/finisher-header.es5.min.js"]'
+      );
+      if (script) document.body.removeChild(script);
+    };
+  }, []);
+
   useEffect(() => {
     console.log(params.roomId);
 
@@ -46,32 +96,6 @@ export default function Room() {
     getPlayers();
   }, [params.roomId, setPlayers]);
 
-  useEffect(() => {
-    if (socket) {
-      socket.onmessage = async (evt) => {
-        try {
-          const message: ServerMessageTypes = JSON.parse(evt.data);
-          if (message.type === ServerMessages.GAME_STARTED) {
-            //router the user to the game page
-            router.push("/room/" + params.roomId + "/game");
-          } else if (message.type === ServerMessages.PLAYER_ADDED) {
-            toast({
-              title: "New Player added",
-            });
-            setPlayers(message.players);
-          } else if (message.type === ServerMessages.PLAYER_LEFT) {
-            toast({
-              title: "Player Left",
-            });
-            setPlayers(message.players);
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      };
-    }
-  }, [socket]);
-
   const handleLeaveRoom = async () => {
     const data = JSON.stringify({
       type: SocketMessages.LEAVE_ROOM,
@@ -79,23 +103,24 @@ export default function Room() {
       roomId: params.roomId,
     });
     socket?.send(data);
-    router.push("/");
+    router.replace("/");
   };
 
   const handleCopyLink = async () => {
     //copy the link to clipboard
-    const link = "http://localhost:3000/?roomId=" + params.roomId
+    const link = "http://localhost:3000/?roomId=" + params.roomId;
 
-    navigator.clipboard.writeText(link)
+    navigator.clipboard.writeText(link);
 
-    toast({title: "Copied to Clipboard"})
-  }
+    toast({ title: "Copied to Clipboard" });
+  };
 
   return (
-    <div className=" w-screen min-h-screen flex flex-col justify-center items-center">
+    <div className="relative w-screen min-h-screen flex flex-col justify-center items-center">
+      <div className="finisher-header absolute inset-0 pointer-events-none"></div>
       <div className=" gap-7 flex justify-center items-center">
         {/* Sidebar */}
-        <Card className="min-w-[40vw]">
+        <Card className="min-w-[40vw] bg-transparent text-white border-none">
           <CardHeader>
             <CardTitle>Players</CardTitle>
             <hr />
@@ -116,11 +141,13 @@ export default function Room() {
         </Card>
 
         {username === host?.username && (
-          <Button onClick={startGame}>Start Game</Button>
+          <Button variant={"secondary"} onClick={startGame}>Start Game</Button>
         )}
-        <Button onClick={handleLeaveRoom}>Leave Room</Button>
+        <Button variant={"secondary"} onClick={handleLeaveRoom}>Leave Room</Button>
       </div>
-      <Button className="my-4" onClick={handleCopyLink}>Copy Link</Button>
+      <Button variant={"secondary"} className="my-4" onClick={handleCopyLink}>
+        Copy Link
+      </Button>
       {/* <p>{`http://localhost:3000/?roomId=${params.roomId}`}</p> */}
     </div>
   );

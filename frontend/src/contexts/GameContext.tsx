@@ -6,18 +6,22 @@ import {
   ServerMessageTypes,
   ServerMessages,
   Chat,
+  ModalTypes,
 } from "@/lib/types";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { usePlayerContext } from "./PlayerContext";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { useCanvasContext } from "./CanvasContext";
+import useSound from "use-sound";
 
 interface GameContextType {
   players: Player[];
@@ -29,8 +33,11 @@ interface GameContextType {
   setChat: React.Dispatch<React.SetStateAction<Chat[]>>;
   setDrawer: React.Dispatch<React.SetStateAction<Player | null>>;
   startGame: () => void;
-  showModal: boolean;
+  leaderboard: Array<[string, number]> | null;
+  modalType: ModalTypes;
   modalData: any;
+  word: string | null;
+  time: number | null;
 }
 
 const GameContext = createContext<GameContextType>({
@@ -43,8 +50,11 @@ const GameContext = createContext<GameContextType>({
   setChat: () => {},
   setDrawer: () => {},
   startGame: () => {},
-  showModal: false,
-  modalData: "",
+  leaderboard: null,
+  modalType: ModalTypes.Hide,
+  modalData: null,
+  word: null,
+  time: 0,
 });
 
 export default function GameContextProvider({
@@ -55,25 +65,63 @@ export default function GameContextProvider({
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const [play, { sound, stop }] = useSound("/sounds/old-video-game-5.wav", {
+    volume: 0.5,
+  });
+  const [playCorrectAns] = useSound("/sounds/announcement-sound-4.wav", {
+    volume: 0.5,
+  });
   const { socket, username } = usePlayerContext();
   const [players, setPlayers] = useState<Player[]>([]);
   const [chat, setChat] = useState<Chat[]>([]);
   const [host, setHost] = useState<Player | null>(null);
   const [drawer, setDrawer] = useState<Player | null>(null);
-  const [showModal, setShowModal] = useState<boolean>(true);
+  const [modalType, setModalType] = useState<ModalTypes>(ModalTypes.Points);
   const [modalData, setModalData] = useState<any>();
+  const [leaderboard, setLeaderboard] = useState<Array<
+    [string, number]
+  > | null>(null);
   const { setLines } = useCanvasContext();
+  const [word, setWord] = useState<string | null>(null);
+  const [time, setTime] = useState<number | null>(30);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    timerRef.current = setInterval(() => {
+      setTime((prev) => {
+        if (prev && prev > 0) {
+          return prev - 1;
+        }
+        clearInterval(timerRef.current!);
+        return 0;
+      });
+    }, 1000);
+  }, []);
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setTime(0);
+  }, []);
+
+  useEffect(() => {
+    return () => clearInterval(timerRef.current!);
+  }, []);
 
   useEffect(() => {
     if (socket) {
       socket.onmessage = async (evt: any) => {
         try {
           const message: ServerMessageTypes = await JSON.parse(evt.data);
-          console.log(message);
           switch (message.type) {
             case ServerMessages.GAME_STARTED: {
-              router.push("/room/" + params.roomId + "/game");
-              setDrawer(message.drawer);
+              play();
+              router.replace("/room/" + params.roomId + "/game");
               break;
             }
             case ServerMessages.PLAYER_ADDED: {
@@ -102,26 +150,53 @@ export default function GameContextProvider({
               toast({
                 title: message.msg,
               });
+              playCorrectAns();
               break;
             }
             case ServerMessages.CHOOSE_WORD: {
               toast({
                 title: "choose word",
               });
-              console.log(message.words)
-              setModalData(message.words)
-              setShowModal(true)
+              setModalType(ModalTypes.WordChoose);
+              setModalData(message.words);
               break;
             }
             case ServerMessages.WORD_CHOSEN: {
-              setShowModal(false)
+              setModalType(ModalTypes.Hide);
+              if (username != drawer?.username) setWord(message.word);
               toast({
                 title: "word chosen",
               });
               break;
             }
-            default: {
-              console.log("Unclear message", message.type);
+            case ServerMessages.ROUND_STARTED: {
+              setDrawer(message.drawer);
+              setTime(message.timer / 1000);
+              setModalType(ModalTypes.Hide);
+              break;
+            }
+            case ServerMessages.ROUND_ENDED: {
+              setModalType(ModalTypes.Points);
+              setModalData(message.pointsTable);
+            }
+            case ServerMessages.START_TIMER: {
+              if (time && time > 0) {
+                console.log("here");
+                startTimer();
+              }
+              break;
+            }
+            case ServerMessages.LEADERBOARD_UPDATE: {
+              setLeaderboard(message.leaderboard);
+              break;
+            }
+            case ServerMessages.END_TIMER: {
+              stopTimer();
+              break;
+            }
+            case ServerMessages.GAME_ENDED: {
+              router.replace("/");
+              break;
             }
           }
         } catch (e) {
@@ -129,7 +204,7 @@ export default function GameContextProvider({
         }
       };
     }
-  }, [socket]);
+  }, [socket, play]);
 
   const startGame = async () => {
     const data = JSON.stringify({
@@ -152,8 +227,11 @@ export default function GameContextProvider({
         setDrawer,
         setHost,
         startGame,
-        showModal,
-        modalData
+        leaderboard,
+        modalType,
+        modalData,
+        word,
+        time,
       }}
     >
       {children}

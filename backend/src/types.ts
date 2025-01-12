@@ -32,7 +32,7 @@ interface JoinRoomMessage {
 
 interface ChoseWord {
   type: SocketMessages.CHOSE_WORD;
-  roomId: string
+  roomId: string;
   word: string;
 }
 
@@ -113,11 +113,30 @@ interface correctAnswer {
 interface RoundStarted {
   type: ServerMessages.ROUND_STARTED;
   timer: number; //time in milli seconds
+  drawer: Player;
+}
+
+interface RoundEnded {
+  type: ServerMessages.ROUND_ENDED;
+  pointsTable: Array<[string, number]>;
+}
+
+interface StartTimer {
+  type: ServerMessages.START_TIMER;
+}
+
+interface EndTimer {
+  type: ServerMessages.END_TIMER;
 }
 
 interface WordChoosen {
   type: ServerMessages.WORD_CHOSEN;
   word: string;
+}
+
+interface LeaderBoardUpdate {
+  type: ServerMessages.LEADERBOARD_UPDATE;
+  leaderboard: Array<[string, number]>;
 }
 
 export type ServerMessageTypes =
@@ -131,13 +150,23 @@ export type ServerMessageTypes =
   | chatUpdated
   | correctAnswer
   | RoundStarted
-  | WordChoosen;
+  | RoundEnded
+  | StartTimer
+  | EndTimer
+  | WordChoosen
+  | LeaderBoardUpdate;
 
 export enum Tool {
   Default = "Default",
   Rectangle = "Rectangle",
   Circle = "Circle",
   Pen = "Pen",
+}
+
+export enum ModalTypes {
+  Hide,
+  WordChoose,
+  Points,
 }
 
 export type Player = {
@@ -193,6 +222,10 @@ export enum ServerMessages {
   WORD_CHOSEN,
   CORRECT_ANSWER,
   ROUND_STARTED,
+  ROUND_ENDED,
+  START_TIMER,
+  END_TIMER,
+  LEADERBOARD_UPDATE,
 }
 
 export type Canvas = {};

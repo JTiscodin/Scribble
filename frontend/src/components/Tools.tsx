@@ -3,6 +3,7 @@ import { SocketMessages, Tool } from "@/lib/types";
 import { Button } from "./ui/button";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { useParams } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function ToolsList() {
   const { stroke, setStroke, setLines, lines } = useCanvasContext();
@@ -43,19 +44,25 @@ export default function ToolsList() {
 
   return (
     <div className=" text-white rounded-3xl flex  justify-around items-center">
-      {strokeColors.map((color, i) => (
-        <div
-          key={i}
-          onClick={() => changePenColour(color)}
-          style={{ backgroundColor: color }} // Set the background color directly
-          className={`w-8 h-8 my-1 ${
-            color === stroke ? "border-2 scale-125 border-black" : ""
-          }  duration-100 hover:scale-125 rounded-full cursor-pointer`}
-        />
-      ))}
-      <Button className="my-4" onClick={handleCanvasReset}>
-        R
-      </Button>
+      <AnimatePresence>
+        {strokeColors.map((color, i) => (
+          <motion.div
+            key={i}
+            initial={{ y: 200 }}
+            animate={{ y: 0 }}
+            whileHover={{ scale: 1.25 }}
+            onClick={() => changePenColour(color)}
+            style={{ backgroundColor: color }} // Set the background color directly
+            className={`w-8 h-8 my-1 ${
+              color === stroke ? "border-2 scale-125 border-black" : ""
+            }    rounded-full cursor-pointer`}
+          />
+        ))}
+      </AnimatePresence>
+
+        <Button className="my-4" onClick={handleCanvasReset}>
+          R
+        </Button>
     </div>
   );
 }

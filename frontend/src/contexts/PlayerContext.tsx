@@ -36,7 +36,7 @@ const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
     setSocket(socket);
 
     if (!params.has("roomId")) {
-      router.push("/");
+      router.replace("/")
     }
 
     return () => socket.close();
