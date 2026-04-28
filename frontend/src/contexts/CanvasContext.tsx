@@ -4,14 +4,12 @@ import {
   ReactNode,
   createContext,
   useContext,
-  useEffect,
   useRef,
   useState,
 } from "react";
 
-import { Tool } from "@/lib/types";
 import Konva from "konva";
-import { Stage } from "konva/lib/Stage";
+
 
 interface MyComponentProps {
   children: ReactNode;

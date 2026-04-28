@@ -1,5 +1,4 @@
 import { useCanvasContext } from "@/contexts/CanvasContext";
-import { useToast } from "@/components/ui/use-toast";
 import { Stage, Layer, Rect, Circle, Transformer, Line } from "react-konva";
 
 import { usePlayerContext } from "@/contexts/PlayerContext";
@@ -14,19 +13,14 @@ import { useGameContext } from "@/contexts/GameContext";
 
 export default function Canvas({ roomId }: { roomId: string }) {
   const {
-    elements,
-    setElements,
     isDrawing,
     stageRef,
     lines,
     setLines,
     stroke,
-    setStroke,
   } = useCanvasContext();
 
   const { drawer } = useGameContext();
-
-  const {toast} = useToast();
 
   const { socket, username } = usePlayerContext();
 
@@ -46,6 +40,7 @@ export default function Canvas({ roomId }: { roomId: string }) {
     if (!isDrawing.current) {
       return;
     }
+  
     try {
       const stage = e.target.getStage();
       const point = stage.getPointerPosition();
@@ -61,6 +56,7 @@ export default function Canvas({ roomId }: { roomId: string }) {
         username,
         roomId: roomId,
       });
+      //! use debounced function to send data to the server
       socket?.send(data);
     } catch (error) {
       console.log(error);

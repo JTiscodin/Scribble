@@ -1,16 +1,15 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
-import { Stage, Layer, Rect, Transformer } from "react-konva";
+import { Rect, Transformer } from "react-konva";
 
-const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
-  const shapeRef = React.useRef();
-  const trRef = React.useRef();
+const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }: any) => {
+  const shapeRef = React.useRef<any>(null);
+  const trRef = React.useRef<any>(null);
 
   React.useEffect(() => {
-    if (isSelected) {
+    if (isSelected && trRef.current && shapeRef.current) {
       // we need to attach transformer manually
-      trRef.current.nodes([shapeRef.current]);
-      trRef.current.getLayer().batchDraw();
+      (trRef.current as any).nodes([shapeRef.current]);
+      (trRef.current as any).getLayer().batchDraw();
     }
   }, [isSelected]);
 
@@ -34,7 +33,8 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
           // and NOT its width or height
           // but in the store we have only width and height
           // to match the data better we will reset scale on transform end
-          const node = shapeRef.current;
+          const node: any = shapeRef.current;
+          if (!node) return;
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
 
@@ -68,4 +68,4 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
   );
 };
 
-export default Rectangle
+export default Rectangle;

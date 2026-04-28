@@ -1,17 +1,19 @@
+import cors from "cors";
+import express from "express";
+import http from "http";
 import WebSocket from "ws";
+import { Game } from "./Game";
 import { Room } from "./Room";
 import { MessageTypes, ServerMessages, SocketMessages } from "./types";
-import { Game } from "./Game";
-import express from "express";
-import cors from "cors";
 
 const app = express();
 
 app.use(express.json());
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 
-const wss = new WebSocket.Server({ port: 8080 });
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
 const rooms: Room[] = [];
 
@@ -32,7 +34,7 @@ wss.on("connection", (ws: WebSocket) => {
 
         const room = new Room(
           { socket: ws, username: message.username },
-          message.roomName
+          message.roomName,
         );
         const data = JSON.stringify({
           type: ServerMessages.ROOM_CREATED,
@@ -122,10 +124,13 @@ wss.on("connection", (ws: WebSocket) => {
         break;
       }
       case SocketMessages.CHECK_ANSWER: {
-        const room = rooms.find((room) => room.id === message.roomId)
-        if(room && room.game){
+        const room = rooms.find((room) => room.id === message.roomId);
+        if (room && room.game) {
           //Performing the checkAnswer method if room is found
-          room.game?.checkAnswer(message.answer, {socket: ws, username: message.username})
+          room.game?.checkAnswer(message.answer, {
+            socket: ws,
+            username: message.username,
+          });
         }
         break;
       }
@@ -167,7 +172,7 @@ app.get("/players/:roomId", async (req, res) => {
   }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
   console.log("Started server on port " + PORT);
 });

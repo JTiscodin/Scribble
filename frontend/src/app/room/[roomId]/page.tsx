@@ -1,18 +1,12 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Player,
-  ServerMessages,
-  ServerMessageTypes,
-  SocketMessages,
-} from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { usePlayerContext } from "@/contexts/PlayerContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useGameContext } from "@/contexts/GameContext";
+import { usePlayerContext } from "@/contexts/PlayerContext";
+import { Player, SocketMessages } from "@/lib/types";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 export default function Room() {
   //Implement the room page
   /* 
@@ -72,7 +66,7 @@ export default function Room() {
 
     return () => {
       const script = document.querySelector(
-        'script[src="/finisher-header.es5.min.js"]'
+        'script[src="/finisher-header.es5.min.js"]',
       );
       if (script) document.body.removeChild(script);
     };
@@ -84,9 +78,9 @@ export default function Room() {
     //connect to room when this page is loaded
     //getting the players for particular roomId
     const getPlayers = async () => {
-      const response = await fetch(
-        "http://localhost:5000/players/" + params.roomId
-      );
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+      const response = await fetch(`${backendUrl}/players/${params.roomId}`);
       const data = await response.json();
       console.log(data);
       setPlayers(data.players);
@@ -108,7 +102,7 @@ export default function Room() {
 
   const handleCopyLink = async () => {
     //copy the link to clipboard
-    const link = "http://localhost:3000/?roomId=" + params.roomId;
+    const link = `${window.location.origin}/?roomId=${params.roomId}`;
 
     navigator.clipboard.writeText(link);
 
@@ -141,9 +135,13 @@ export default function Room() {
         </Card>
 
         {username === host?.username && (
-          <Button variant={"secondary"} onClick={startGame}>Start Game</Button>
+          <Button variant={"secondary"} onClick={startGame}>
+            Start Game
+          </Button>
         )}
-        <Button variant={"secondary"} onClick={handleLeaveRoom}>Leave Room</Button>
+        <Button variant={"secondary"} onClick={handleLeaveRoom}>
+          Leave Room
+        </Button>
       </div>
       <Button variant={"secondary"} className="my-4" onClick={handleCopyLink}>
         Copy Link

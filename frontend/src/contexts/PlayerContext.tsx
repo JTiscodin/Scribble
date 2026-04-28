@@ -3,12 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
+  Dispatch,
   ReactNode,
+  SetStateAction,
+  Suspense,
   useContext,
   useEffect,
   useState,
-  Dispatch,
-  SetStateAction,
 } from "react";
 
 interface PlayerContextValue {
@@ -23,20 +24,23 @@ interface PlayerContextProviderProps {
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
-const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
+const PlayerContextInner = ({ children }: PlayerContextProviderProps) => {
   const params = useSearchParams();
   const router = useRouter();
-  const [username, setUsername] = useState<string>(
-    localStorage.getItem("username") || ""
-  );
+  const [username, setUsername] = useState<string>("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8080/");
+    setUsername(localStorage.getItem("username") || "");
+  }, []);
+
+  useEffect(() => {
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5000/";
+    const socket = new WebSocket(wsUrl);
     setSocket(socket);
 
     if (!params.has("roomId")) {
-      router.replace("/")
+      router.replace("/");
     }
 
     return () => socket.close();
@@ -49,13 +53,21 @@ const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
   );
 };
 
+const PlayerContextProvider = ({ children }: PlayerContextProviderProps) => {
+  return (
+    <Suspense fallback={null}>
+      <PlayerContextInner>{children}</PlayerContextInner>
+    </Suspense>
+  );
+};
+
 // Custom hook to use the PlayerContext
 export const usePlayerContext = () => {
   const context = useContext(PlayerContext);
 
   if (!context) {
     throw new Error(
-      "usePlayerContext must be used within a PlayerContextProvider"
+      "usePlayerContext must be used within a PlayerContextProvider",
     );
   }
 
